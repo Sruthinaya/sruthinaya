@@ -1,42 +1,41 @@
 from fastapi import FastAPI
+from typing import Optional
 from pydantic import BaseModel
-
-import requests
 
 app = FastAPI()
 
-db = []
-
-class City(BaseModel):
+class CV(BaseModel):
     name: str
-    timezone: str
+    age: int
+    dev:bool
+    hobby:Optional[list]
+        
+class EMPLOYEE(BaseModel):
+    name:str
+    exp:int
+    yop:int
+    age:int
+    employed:bool
 
-@app.get('/')
-def index():
-    return {'key' : 'value'}
+@app.get("/hello/{my_query}")
+def read_root(my_query,q:Optional[str]=None):
+    return {"Hello": "World","user_input":my_query,"query":q}
 
-@app.get('/cities')
-def get_cities():
-    results = []
-    for city in db:
-        r = requests.get(f'http://worldtimeapi.org/api/timezone/{city["timezone"]}')
-        current_time = r.json()['datetime']
-        results.append({'name' : city['name'], 'timezone': city['timezone'], 'current_time': current_time})
-    return results
+@app.put("/endpoint2")
+async def endpoint( resume: CV):
+    "some code db here"
+    return {"username": resume.name}
 
-@app.get('/cities/{city_id}')
-def get_city(city_id: int):
-    city = db[city_id-1]
-    r = requests.get(f'http://worldtimeapi.org/api/timezone/{city["timezone"]}')
-    current_time = r.json()['datetime']
-    return {'name' : city['name'], 'timezone': city['timezone'], 'current_time': current_time}
+@app.post("/mypostendpoint")
+async def mpep(emp:EMPLOYEE):
+    return{"empname":emp.name}
 
-@app.post('/cities')
-def create_city(city: City):
-    db.append(city.dict())
-    return db[-1]
-
-@app.delete('/cities/{city_id}')
-def delete_city(city_id: int):
-    db.pop(city_id-1)
-    return {}
+@app.get("/mysecureendpoint")
+async def msep(token:str):
+    authtoken = "d2VkZGV2"
+    if token!="" or token==authtoken:
+        authorisation = "success welcome home"
+    else:
+        authorisation = "go back"
+    return{"serverpass":authorisation}
+       
